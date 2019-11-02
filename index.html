@@ -1,4 +1,124 @@
-<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>The hacky sack &middot; The hacky sack</title><meta name=description content><meta name=generator content="Hugo 0.59.0"><meta name=twitter:card content="summary"><meta name=twitter:title content="The hacky sack &middot; The hacky sack"><meta name=twitter:description content><meta property="og:type" content="article"><meta property="og:title" content="The hacky sack &middot; The hacky sack"><meta property="og:description" content><link href="//fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Oxygen:400,700" rel=stylesheet type=text/css><link rel=stylesheet href=//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/pure-min.css><link rel=stylesheet href=//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-min.css><link rel=stylesheet href=https://rlupton20.github.io/css/all.min.css><link href=//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css rel=stylesheet><link rel=alternate type=application/rss+xml title="The hacky sack" href=https://rlupton20.github.io/index.xml></head><body><div id=layout class=pure-g><div class="sidebar pure-u-1 pure-u-md-1-4"><div class=header><hgroup><h1 class=brand-title><a href=https://rlupton20.github.io/>The hacky sack</a></h1><h2 class=brand-tagline></h2></hgroup><nav class=nav><ul class=nav-list><li class=nav-item><a class=pure-button href=https://github.com/rlupton20><i class="fa fa-github-alt"></i>Github</a></li><li class=nav-item><a class=pure-button href=https://rlupton20.github.io/index.xml><i class="fa fa-rss"></i>rss</a></li></ul></nav></div></div><div class="content pure-u-1 pure-u-md-3-4"><div><div class=posts><h1 class=content-subhead>25 Sep 2017, 16:00</h1><section class=post><header class=post-header><a href=https://rlupton20.github.io/posts/2017-09-25-libre-rate-your-nixos/ class=post-title>Libre-rate your NixOS</a><p class=post-meta></p></header><div class=post-description><p>NixOS isn&rsquo;t a libre distribution by any means, but it comes close, and maintains a clear distinction between free and non-free packages (and in fact, different license types). This makes it possible to configure the system to exclude non-free packages, and with the addition of a libre kernel, allows us to turn NixOS into a libre platform. Of course, this isn&rsquo;t the same as leveraging an FSF endorsed distribution, but for those who are happy to maintain and take responsibility for the software running on their systems, it&rsquo;s as good. In fact, it&rsquo;s a little strange that the process of deblobbing normal systems isn&rsquo;t better documented and more widely done, after all, this is exactly what a libre distribution typically is. If you want a libre system out of the box, with nix-y functionality, GuixSD is also worth a look, but I really like NixOS, and I thought it worth the effort to libre-up.</p><p>By default, most non-free packages can&rsquo;t be installed on nixos without explicitly allowing unfree packages. There are a couple of places however where non-free software can be installed. The first is in the standard linux kernel, so our first job is to rebase our system on top of a libre linux build. NixOS does allows packages with the license type <code>unfreeRedistributableFirmware</code>, so the remainder of the work consists of blacklisting this license type.</p><h1 id=installing-a-libre-kernel>Installing a libre kernel</h1><p>The default linux kernel comes with all the binary blobs typically packaged with the linux kernel. NixoOS makes it easy to specify a custom kernel in <code>/etc/nixos/configuration.nix</code>.</p><p>There are three stages to installing a custom kernel build:
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>The hacky sack &middot; The hacky sack</title><meta name=description content><meta name=generator content="Hugo 0.59.0"><meta name=twitter:card content="summary"><meta name=twitter:title content="The hacky sack &middot; The hacky sack"><meta name=twitter:description content><meta property="og:type" content="article"><meta property="og:title" content="The hacky sack &middot; The hacky sack"><meta property="og:description" content><link href="//fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Oxygen:400,700" rel=stylesheet type=text/css><link rel=stylesheet href=//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/pure-min.css><link rel=stylesheet href=//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-min.css><link rel=stylesheet href=https://rlupton20.github.io/css/all.min.css><link href=//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css rel=stylesheet><link rel=alternate type=application/rss+xml title="The hacky sack" href=https://rlupton20.github.io/index.xml></head><body><div id=layout class=pure-g><div class="sidebar pure-u-1 pure-u-md-1-4"><div class=header><hgroup><h1 class=brand-title><a href=https://rlupton20.github.io/>The hacky sack</a></h1><h2 class=brand-tagline></h2></hgroup><nav class=nav><ul class=nav-list><li class=nav-item><a class=pure-button href=https://github.com/rlupton20><i class="fa fa-github-alt"></i>Github</a></li><li class=nav-item><a class=pure-button href=https://rlupton20.github.io/index.xml><i class="fa fa-rss"></i>rss</a></li></ul></nav></div></div><div class="content pure-u-1 pure-u-md-3-4"><div><div class=posts><h1 class=content-subhead>30 Oct 2019, 12:21</h1><section class=post><header class=post-header><a href=https://rlupton20.github.io/posts/y-combinator/ class=post-title>The Y combinator - understanding recursion without recursion</a><p class=post-meta></p></header><div class=post-description><h1 id=introduction>Introduction</h1><p>Recursion is central to functional programming, as a clearer alternative to loops as other control structures typical of imperative languages. Functional programming encourages programmers to study recursion in greater depths. I first encountered the Y combinator in the mind-bending penultimate chapter of the wonderful <em>The Little Schemer</em>, which explores recursion in great depth. In an effort to unbend my own mind on the subject, I decided to derive it for myself, so I could see how it worked, and gain an extra tool in dealing with recursion and closures.</p><blockquote><p>Do you now know why Y works? Read this chapter just one more time and you will.<br><em>(The Little Schemer)</em></p></blockquote><p>The Y combinator was discovered by Haskell Curry in the 1940s. It allows recursion to be captured without functions needing to reference themselves by name. It provides some insight into the nature of recursion in the lambda calculus (where nothing has a name), and also demonstrates the power of closures.</p><p>We will conduct our explorations mostly in scheme, because it&rsquo;s expressive, concise and elegant, but we also give examples in Haskell and JavaScript at the end. The Haskell version is ludicrously simple and clear (relying on lazy evaluation), while the JavaScript version mirrors the Scheme version.</p><h2 id=further-reading>Further reading</h2><p><em>The Little Schemer</em> (amazon <a href="https://www.amazon.co.uk/Little-Schemer-MIT-Press/dp/0262560992/ref=as_sl_pc_tf_til?tag=zigschots20-21&amp;linkCode=w00&amp;linkId=01845223831793ea377c7e652c3f8547&amp;creativeASIN=0262560992">uk</a>/<a href="https://www.amazon.com/Little-Schemer-Daniel-P-Friedman/dp/0262560992/ref=as_sl_pc_qf_sp_asin_til?tag=zigschots20-20&amp;linkCode=w00&amp;linkId=b4600a1821debb502f6423061932ea51&amp;creativeASIN=0262560992">us</a>) gives a great introduction to recursion, including a section on the Y combinator. The presentation here is a little different, since I wanted a more direct understanding of how the Y combinator worked.</p><h1 id=recursive-functions-as-fixed-points-of-higher-order-functions>Recursive functions as fixed points of (higher-order) functions</h1><p>The Y combinator allows the programmer to pass in a function which isn&rsquo;t explicitly recursive (doesn&rsquo;t reference itself by name), but describes a step in a recursive process with a continuation, and provides back a new function which recursively applies that step using itself as the continuation.</p><p>Let&rsquo;s start by making the term &ldquo;step in a recursive process with a continuation&rdquo; more concrete, and clarify how the Y combinator acts on these steps.</p><p>To give us something specific to think about, let&rsquo;s examine the factorial function. The classic recursive definition of factorial is expressed in Scheme as follows</p><pre><code class=language-scheme>(define (factorial n)
+  (if (= n 0)
+    1
+    (* n (factorial (- n 1)))))
+</code></pre><p>This definition references itself. We can view it as an equation in terms of <code>factorial</code>, however. In fact, we can define</p><pre><code class=language-scheme>(define (factorialize f)
+  (lambda (n)
+    (if (= n 0)
+      1
+      (* n (f (- n 1))))))
+</code></pre><p>and observe that <code>(factorialize factorial)</code> (<code>factorialize</code> applied to the <code>factorial</code> function) is itself <code>factorial</code>. The formal way to say this is that <code>factorial</code> is a fixed-point of <code>factorialize</code>.</p><p>Its important to understand that <code>factorialize</code> operates on all functions from numbers to numbers. In terms of function, we can look at <code>factorialize</code> as doing a single step in the factorial function, and then, instead of recursing, handing off the remainder of the work to a continuation which is passed in as a parameter. This is what is meant by a &ldquo;step in a recursive process with a continuation&rdquo;. <code>factorialize</code> itself is not recursive - it hands the recursion over to some continuation which is passed in.</p><p>The Y combinator turns these recursive steps into full-blown recursive functions. Applied to <code>factorialize</code> it finds a fixed point (you can prove by induction that such a fixed point is necessarily the <code>factorial</code> function). This means we can define the factorial function by</p><pre><code class=language-scheme>(define factorial
+  (Y factorialize))
+</code></pre><p>where here, <code>Y</code> is the Y combinator. How does it do this? In effect it passes <code>factorialize</code> in as the continuation to <code>factorialize</code>, so that the same recursive step is applied over-and-over, until we reach the base case.</p><h1 id=deriving-the-y-combinator>Deriving the Y combinator</h1><h2 id=capturing-our-own-value>Capturing our own value</h2><p>The fixed point perspective is a useful starting point, because we want the Y combinator applied to <code>factorialize</code> to be an expression <code>expr</code> which satisfies</p><pre><code>expr = (factorialize expr)
+</code></pre><p>One possible starting point is to ask, how can an expression capture it&rsquo;s own value? That is, can we write an expression, which, inside itself, has a handle on its own value.</p><p>The trick to doing this is to observe that applying the anonymous function <code>(lambda (f) (f f))</code> to a function allows a function to receive itself as an argument. If we feed this function another function, <code>(lambda (recur) ...)</code>, and try to evaluate it</p><pre><code class=language-scheme>((lambda (f) (f f))
+  (lambda (recur)
+    ...))
+</code></pre><p>Then inside the inner lambda, <code>recur</code> will be bound to the <code>(lambda (recur) ...)</code>. But then <code>(recur recur)</code> is just the inner lambda <code>(lambda (recur) ...)</code> applied to itself, which is the value of the expression we&rsquo;re trying to evaluate (that might take a few reads!).</p><p>In other words, if we try to evaluate the following</p><pre><code class=language-scheme>((lambda (f) (f f))
+  (lambda (recur)
+    (recur recur)))
+</code></pre><p>by applying the outer function, we get back to where started. If you try to evaluate this, it will just loop forever! In Haskell we could write this as</p><pre><code class=language-haskell>let x = x in x
+</code></pre><p>Since we are looking for a function <code>exp</code> with value <code>(factorialize exp)</code>, and we know <code>(recur recur)</code> has value <code>exp</code> in the above, we can try inserting a call to factorialize:</p><pre><code class=language-scheme>((lambda (f) (f f))
+  (lambda (recur)
+    (factorialize (recur recur))))
+</code></pre><p>By the same reasoning, if this has value <code>v</code>, then by applying the outer <code>lambda</code>, we see it also has value <code>(factorialize v)</code>. Great! We&rsquo;ve found a fixed point for <code>factorialize</code>, and hence this must be the <code>factorial</code> function. In fact, if we parameterize over <code>factorialize</code> then we have the (formal) Y combinator!</p><h2 id=making-it-run>Making it run</h2><p>What happens when we try and evaluate this? Firing up a Scheme interpreter and plugging it in</p><pre><code>((lambda (f) (f f))
+ (lambda (recur)
+  (factorialize (recur recur))))
+
+;Aborting!: maximum recursion depth exceeded
+</code></pre><p>Hmm. The issue here is that when trying to evaluate this procedure, <code>(recur recur)</code> has to be fully evaluated before a call to <code>factorialize</code> is made (scheme evaluates its arguments before calling functions). This means for our expression <code>exp</code> to be evaluated, <code>exp</code> (<code>(recur recur)</code>) must first be evaluated - this leads to an infinite loop!</p><p>To fix this, we want to delay the evaluation of <code>(recur recur)</code> until it is needed (in other words evaluate it lazily). We can do this with the aid of a lambda:</p><pre><code class=language-scheme>((lambda (f) (f f))
+ (lambda (recur)
+  (factorialize (lambda (x) ((recur recur) x)))))
+</code></pre><p>Let&rsquo;s try it:</p><pre><code>(((lambda (f) (f f))
+ (lambda (recur)
+   (factorialize (lambda (x) ((recur recur) x))))) 0)
+
+;Value: 1
+</code></pre><pre><code>(((lambda (f) (f f))
+ (lambda (recur)
+   (factorialize (lambda (x) ((recur recur) x))))) 5)
+
+;Value: 120
+</code></pre><p>Looking good! Notice that none of this has anything to do with <code>factorialize</code>. We can parameterise and abstract:</p><pre><code class=language-scheme>(define (Y F)
+  ((lambda (f) (f f))
+   (lambda (recur)
+     (F (lambda (x) ((recur recur) x))))))
+</code></pre><p>Hello Y combinator!</p><h1 id=examples-of-the-y-combinator-in-action>Examples of the Y combinator in action</h1><p>We started with the factorial function, so that ought to work as expected:</p><pre><code class=language-scheme>(define factorial
+  (Y
+   (lambda (recur)
+     (lambda (n)
+       (if (= n 0)
+           1
+           (* n (recur (- n 1))))))))
+
+
+(factorial 5)
+
+;Value: 120
+</code></pre><p>Another easy example is defining the length of a list:</p><pre><code class=language-scheme>(define length
+  (Y
+   (lambda (recur)
+     (lambda (l)
+       (if (null? l)
+           0
+           (+ 1 (recur (cdr l))))))))
+
+
+(length '(1 2 3))
+
+;Value: 3
+
+</code></pre><p>Multiple calls to recur also work just fine:</p><pre><code class=language-scheme>(define fibonacci
+  (Y
+   (lambda (recur)
+     (lambda (n)
+       (cond 
+        ((= n 0) 0)
+        ((= n 1) 1)
+        (else (+ (recur (- n 1))
+                 (recur (- n 2)))))))))
+                 
+
+(map fibonacci (list 0 1 2 3 4 5 6 7 8))
+
+;Value: (0 1 1 2 3 5 8 13 21)
+</code></pre><p>We can also use the Y combinator&rsquo;s definition to write recursive lambdas inline. To give a contrived example using length of lists:</p><pre><code>(map
+  ((lambda (F)
+     ((lambda (f) (f f))
+      (lambda (recur)
+        (F (lambda (x) ((recur recur) x))))))
+   (lambda (recur)
+     (lambda (l)
+       (if (null? l)
+           0
+           (+ 1 (recur (cdr l)))))))
+
+  '((1) (1 2) (1 2 3)))
+
+;Value: (1 2 3)
+</code></pre><h1 id=intuitions-about-y-as-a-limit>Intuitions about Y as a limit</h1><p>Let&rsquo;s try and get a different intuition for how Y works. Let&rsquo;s lean on our <code>factorial</code> and <code>factorialize</code> example some more.</p><p>One intuitive way to get <code>factorial</code> out of <code>factorialize</code>, is to pass <code>factorialize</code> something like <code>factorialize</code> as it&rsquo;s argument. In fact, each of the following gets closer and closer to <code>factorial</code></p><pre><code class=language-scheme>(factorialize factorialize)                                ; Evaluates correctly for 0
+(factorialize (factorialize factorialize))                 ; Evaluates correctly for 0, 1
+(factorialize (factorialize (factorialize factorialize)))  ; Evaluates for correctly 0, 1, 2
+...
+</code></pre><p>One can think of <code>factorial</code> as being something like</p><pre><code class=language-scheme>(factorialize (factorialize (factorialize ...)))
+</code></pre><p>Notice that to evaluate <code>factorial</code> on a given number, we only need finitely many of these calls to <code>factorialize</code>.</p><p>In fact, if we expand, for example, <code>((Y factorialize 3))</code> we get</p><pre><code class=language-scheme>(factorialize
+  (factorialize
+    (factorialize
+      ((factorialize _) 0))))
+</code></pre><p>where the <code>_</code> represents a <code>lambda</code> which is never evaluated.</p><h1 id=in-some-other-languages>In some other languages</h1><p>The Y combinator is not restricted to Lisps. Let&rsquo;s give examples of the Y combinator in Haskell and JavaScript.</p><h2 id=the-y-combinator-in-haskell>The Y combinator in Haskell</h2><p>Lazy evaluation means that in Haskell we don&rsquo;t need to work so hard, and we can just write down what i means to be a fixed point</p><pre><code class=language-haskell>y :: (a -&gt; a) -&gt; a
+y f = let g = f g in g
+
+factorial :: Integer -&gt; Integer
+factorial = y factorialize
+  where
+    factorialize _ 0 = 1
+    factorialize recur n = n * recur (n - 1)
+</code></pre><p>This to me seems something close to magic, even though in many ways its simpler to think about than the Scheme version. <code>y</code> is more often named <code>fix</code> in the Haskell community, presumably because it is a definition by equation of a fixed-point. Haskell really is quite beautiful.</p><h2 id=the-y-combinator-in-javascript>The Y combinator in JavaScript</h2><p>JavaScript is not so beautiful. Lambdas and functions might be the only sensible parts of JavaScript, but that&rsquo;s an extraordinarily powerful part all the same. Another grace is that you can even try this snippet in the developer console of your browser.</p><pre><code class=language-javascript>const y = (f) =&gt; ((g) =&gt; g(g))(
+    (recur) =&gt; f((x) =&gt; recur(recur)(x))
+);
+
+const factorialize = (recur) =&gt; (n) =&gt; n == 0 ? 1 : n * recur (n - 1);
+const factorial = y(factorialize);
+</code></pre><h1 id=conclusions>Conclusions</h1><p>Lambdas really are way more powerful than you would at first think! I found understanding how to derive the Y combinator gives me a new way to think. There really are good reasons why functional programming reveres the lambda so much - they are the Jedi weapon par excellence.</p><p>I can imagine many folks would balk at the code for the y combinator - it&rsquo;s hard to see what it does at a glance. It&rsquo;s nonetheless wonderfully abstract, and can be understood by its properties. Nonetheless, explicit recursion is probably clearer.</p></div></section><h1 class=content-subhead>25 Sep 2017, 16:00</h1><section class=post><header class=post-header><a href=https://rlupton20.github.io/posts/2017-09-25-libre-rate-your-nixos/ class=post-title>Libre-rate your NixOS</a><p class=post-meta></p></header><div class=post-description><p>NixOS isn&rsquo;t a libre distribution by any means, but it comes close, and maintains a clear distinction between free and non-free packages (and in fact, different license types). This makes it possible to configure the system to exclude non-free packages, and with the addition of a libre kernel, allows us to turn NixOS into a libre platform. Of course, this isn&rsquo;t the same as leveraging an FSF endorsed distribution, but for those who are happy to maintain and take responsibility for the software running on their systems, it&rsquo;s as good. In fact, it&rsquo;s a little strange that the process of deblobbing normal systems isn&rsquo;t better documented and more widely done, after all, this is exactly what a libre distribution typically is. If you want a libre system out of the box, with nix-y functionality, GuixSD is also worth a look, but I really like NixOS, and I thought it worth the effort to libre-up.</p><p>By default, most non-free packages can&rsquo;t be installed on nixos without explicitly allowing unfree packages. There are a couple of places however where non-free software can be installed. The first is in the standard linux kernel, so our first job is to rebase our system on top of a libre linux build. NixOS does allows packages with the license type <code>unfreeRedistributableFirmware</code>, so the remainder of the work consists of blacklisting this license type.</p><h1 id=installing-a-libre-kernel>Installing a libre kernel</h1><p>The default linux kernel comes with all the binary blobs typically packaged with the linux kernel. NixoOS makes it easy to specify a custom kernel in <code>/etc/nixos/configuration.nix</code>.</p><p>There are three stages to installing a custom kernel build:
 - Generate/obtain a kernel build configuration file
 - Write the build expression into <code>configuration.nix</code>
 - Testing</p><p>Nix will take care of building and installing the kernel for us. It also makes it trivial to reproduce once we&rsquo;ve got the setup we want. Upgrades can be achieved just by updating the source package being pulled.</p><p>Building a kernel takes a little time, so if this is being done on a lot of machines (and once you&rsquo;ve got it working as you like), you may want to set up a custom repository and binary cache for your built kernel, and use this in your <code>configuration.nix</code>. <a href=http://sandervanderburg.blogspot.co.uk/2016/10/push-and-pull-deployment-of-nix-packages.html>This article</a> should help with this, and provide other options for deployment.</p><h2 id=obtaining-your-current-configuration>Obtaining your current configuration</h2><p>We can obtain the configuration file used to build the current kernel using <code>zcat /proc/config.gz</code>. Let&rsquo;s store this in a file alongside <code>configuration.nix</code> and use it to build our libre kernel.</p><pre><code class=language-bash>$ zcat /proc/config.gz | sudo tee /etc/nixos/kernel.config
